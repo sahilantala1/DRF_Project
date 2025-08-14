@@ -5,7 +5,9 @@ from django.http import JsonResponse, Http404
 from django.shortcuts import render,get_object_or_404
 from DRF_App.models import *
 from rest_framework.response import Response
-from .serializers import StudentSeri,EmployeeSeri
+
+from .filters import EmployeeFilter
+from .serializers import StudentSeri,EmployeeSeri,BlogSerializer,CommentSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework import mixins,generics,viewsets
@@ -61,72 +63,73 @@ class Employee(APIView):
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+"""
+class Employee_update(APIView):
+    def get_object(self,id):
+        try:
+            return Employee_details.objects.get(id=id)
+        except Employee_details.DoesNotExist:
+            raise Http404
 
-# class Employee_update(APIView):
-#     def get_object(self,id):
-#         try:
-#             return Employee_details.objects.get(id=id)
-#         except Employee_details.DoesNotExist:
-#             raise Http404
-#
-#     def get(self,request,id):
-#         employee = self.get_object(id)
-#         serializer = EmployeeSeri(employee)
-#         return Response(serializer.data,status=status.HTTP_200_OK)
-#
-#     def delete(self,request,id):
-#         employee = self.get_object(id)
-#         employee.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
-#
-#     def put(self,request,id):
-#         employee = self.get_object(id)
-#         serializer = EmployeeSeri(employee,data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-#         else:
-#             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    def get(self,request,id):
+        employee = self.get_object(id)
+        serializer = EmployeeSeri(employee)
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
-# class Employee(mixins.ListModelMixin,mixins.CreateModelMixin,generics.GenericAPIView):
-#     queryset = Employee_details.objects.all()
-#     serializer_class = EmployeeSeri
-#
-#     def get(self,request):
-#         return self.list(request)
-#
-#     def post(self,request):
-#         return self.create(request)
-#
-# from rest_framework import mixins, generics
-#
-# class EmployeeDetails(
-#     mixins.RetrieveModelMixin,
-#     mixins.UpdateModelMixin,
-#     mixins.DestroyModelMixin,
-#     generics.GenericAPIView
-# ):
-#     queryset = Employee_details.objects.all()
-#     serializer_class = EmployeeSeri
-#     lookup_field = "id"
-#
-#     def get(self, request, *args, **kwargs):
-#         return self.retrieve(request, *args, **kwargs)
-#
-#     def put(self, request, *args, **kwargs):
-#         return self.update(request, *args, **kwargs)
-#
-#     def delete(self, request, *args, **kwargs):
-#         return self.destroy(request, *args, **kwargs)
+    def delete(self,request,id):
+        employee = self.get_object(id)
+        employee.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-# class Employee(generics.ListCreateAPIView):
-#     queryset = Employee_details.objects.all()
-#     serializer_class = EmployeeSeri
-#
-# class EmployeeDetails(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Employee_details.objects.all()
-#     serializer_class = EmployeeSeri
-#     lookup_field = "id"
+    def put(self,request,id):
+        employee = self.get_object(id)
+        serializer = EmployeeSeri(employee,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+class Employee(mixins.ListModelMixin,mixins.CreateModelMixin,generics.GenericAPIView):
+    queryset = Employee_details.objects.all()
+    serializer_class = EmployeeSeri
+
+    def get(self,request):
+        return self.list(request)
+
+    def post(self,request):
+        return self.create(request)
+
+from rest_framework import mixins, generics
+
+class EmployeeDetails(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    generics.GenericAPIView
+):
+    queryset = Employee_details.objects.all()
+    serializer_class = EmployeeSeri
+    lookup_field = "id"
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+class Employee(generics.ListCreateAPIView):
+    queryset = Employee_details.objects.all()
+    serializer_class = EmployeeSeri
+
+class EmployeeDetails(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Employee_details.objects.all()
+    serializer_class = EmployeeSeri
+    lookup_field = "id"
+    filterset_class = EmployeeFilter
 
 class EmployeeViewset(viewsets.ViewSet):
     def list(self,request):
@@ -158,3 +161,29 @@ class EmployeeViewset(viewsets.ViewSet):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors)
+"""
+
+class EmployeeViewDetails(viewsets.ModelViewSet):
+    queryset = Employee_details.objects.all()
+    serializer_class = EmployeeSeri
+    filterset_fields=['designation']
+
+
+class BlogView(generics.ListCreateAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+
+
+class CommentView(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+class BlogDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+    lookup_field = 'id'
+
+class CommentDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    lookup_field = 'id'
